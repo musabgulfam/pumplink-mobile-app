@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Dimensions, Text, TouchableOpacity } from 'react-native';
-import Svg from 'react-native-svg';
-import Animated, { useAnimatedStyle, useSharedValue, runOnJS, useDerivedValue } from 'react-native-reanimated';
+import Svg, { Circle } from 'react-native-svg';
+import Animated, { useAnimatedStyle, useSharedValue, runOnJS, useDerivedValue, useAnimatedProps } from 'react-native-reanimated';
 import { cartesian2Canvas, ReText } from 'react-native-redash';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useColorScheme } from 'react-native';
@@ -16,18 +16,17 @@ const CIRCLE_LENGTH = 1000;
 
 const RADIUS: number = CIRCLE_LENGTH / (2 * Math.PI);
 
+const CENTER_X: number = width / 2;
+
+const CENTER_Y: number = height / 2;
+
 export default function Knob() {
 
     let colorScheme = useColorScheme();
 
-    const CENTER_X: number = width / 2;
-
-    const CENTER_Y: number = height / 2;
-
     const ANGLES_DEGREES: number[] = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
 
     const progress = useSharedValue(0);
-
     const translationX = useSharedValue(cartesian2Canvas({ x: -25, y: 0 }, { x: CENTER_X, y: CENTER_Y }).x);
     const translationY = useSharedValue(cartesian2Canvas({ x: 0, y: RADIUS + 25 }, { x: CENTER_X, y: CENTER_Y }).y);
     const prevTranslationX = useSharedValue(cartesian2Canvas({ x: 0, y: 0 }, { x: CENTER_X, y: CENTER_Y }).x);
@@ -40,6 +39,8 @@ export default function Knob() {
             { translateY: translationY.value },
         ],
     }));
+
+    // const angleTextTheme = ;
 
     const progressText = useDerivedValue(() => {
         let _progress = Math.floor(progress.value)
@@ -84,34 +85,17 @@ export default function Knob() {
 
             translationX.value = newX - 25;
             translationY.value = newY - 25;
-        })
+        });
+
+    const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+    const animatedProps = useAnimatedProps(() => ({
+        strokeDashoffset: CIRCLE_LENGTH*(1-progress.value/360)
+    }));
 
     return (
         <GestureHandlerRootView>
             <SafeAreaView style={styles.container}>
-                <TouchableOpacity
-                    onPress={() => {
-                        console.log(progress.value)
-                    }}
-                    style={{
-                        width: 200,
-                        height: 80,
-                        borderWidth: 3,
-                        borderColor: colorScheme === 'dark' ? 'white' : 'black',
-                        position: 'absolute',
-                        bottom: 70,
-                        right: CENTER_X - 200/2,
-                        padding: 20,
-                        zIndex: 3,
-                        borderRadius: 50
-                    }}
-                >
-                    <Text style={{
-                        color: colorScheme === 'dark' ? 'white' : 'black',
-                        fontSize: 20,
-                        textAlign: 'center'
-                    }}>Go</Text>
-                </TouchableOpacity>
                 {
                     ANGLES_DEGREES.map(angle => <View key={angle} style={{
                         position: 'absolute',
@@ -121,22 +105,31 @@ export default function Knob() {
                             cartesian2Canvas({ x: (RADIUS * Math.sin((angle * 10 + 2) * Math.PI / 180) - 6), y: 0 }, { x: CENTER_X, y: CENTER_Y }).x,
                         zIndex: 2
                     }}>
-                        <Text style={{
-                            color: colorScheme === 'dark' ? 'white' : 'black',
-                            textAlign: 'center'
-                        }}>{angle}</Text>
+                        <Text style={[
+                            {
+                                color: colorScheme === 'dark' ? 'white' : 'black',
+                                textAlign: 'center'
+                            },
+                        ]}>{angle}</Text>
                     </View>)
                 }
-                <ReText style={{
-                    color: colorScheme === 'dark' ? 'white' : 'black',
-                    fontSize: 30,
-                    position: 'absolute',
-                    top: CENTER_Y,
-                    left: CENTER_X - 70,
-                    textAlign: 'center'
-                }} text={progressText} />
+                <TouchableOpacity style={{...styles.buttonStyle, borderColor: colorScheme === 'dark' ? 'white' : 'black' }}>
+                    <ReText style={{ ...styles.animatedButtonTextStyle, color: colorScheme === 'dark' ? 'white' : 'black' }} text={progressText} />
+                </TouchableOpacity>
                 <GestureDetector gesture={pan}>
                     <Svg>
+                        <AnimatedCircle
+                            cx={CENTER_X}
+                            cy={CENTER_Y}
+                            stroke={'#FF8A00'}
+                            strokeWidth={50}
+                            r={RADIUS}
+                            fill={'none'}
+                            strokeDasharray={CIRCLE_LENGTH}
+                            strokeLinecap={'round'}
+                            transform={`rotate(271, ${CENTER_X}, ${CENTER_Y})`}
+                            animatedProps={animatedProps}
+                        />
                         <Animated.View style={[{...styles.ballStyle, borderColor: colorScheme === 'dark' ? 'white' : 'black'}, animatedStyles]} />
                     </Svg>
                 </GestureDetector>
@@ -158,5 +151,21 @@ const styles = StyleSheet.create({
         width: BALL_SIZE,
         height: BALL_SIZE,
         borderRadius: 25,
+    },
+    buttonStyle: {
+        position: 'absolute',
+        top: CENTER_Y,
+        width: 170,
+        height: 70,
+        left: CENTER_X - 170/2,
+        borderWidth: 3,
+        borderRadius: 30,
+        zIndex: 3,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    animatedButtonTextStyle: {
+        fontSize: 30,
+        textAlign: 'center'
     }
 });
