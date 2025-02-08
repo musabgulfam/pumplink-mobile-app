@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, Dimensions, Text, TouchableOpacity } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
-import Animated, { useAnimatedStyle, useSharedValue, runOnJS, useDerivedValue, useAnimatedProps } from 'react-native-reanimated';
+import Svg, { Circle, Defs, ClipPath, Rect } from 'react-native-svg';
+import Animated, { useAnimatedStyle, useSharedValue, runOnJS, useDerivedValue, useAnimatedProps, interpolate } from 'react-native-reanimated';
 import { cartesian2Canvas, ReText } from 'react-native-redash';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useColorScheme } from 'react-native';
@@ -93,6 +93,14 @@ export default function Knob() {
         strokeDashoffset: CIRCLE_LENGTH*(1-progress.value/360)
     }));
 
+    const waterLevel = useDerivedValue(() => Math.max(1, progress.value), [progress]);
+
+    const WaterContainerComponent = Animated.createAnimatedComponent(Rect);
+
+    const dynamicHeight = useAnimatedProps(() => ({
+        height: interpolate(waterLevel.value, [1, 300-20], [1, RADIUS*2])
+    }));
+
     return (
         <GestureHandlerRootView>
             <SafeAreaView style={styles.container}>
@@ -113,9 +121,10 @@ export default function Knob() {
                         ]}>{angle}</Text>
                     </View>)
                 }
-                <TouchableOpacity style={{...styles.buttonStyle, borderColor: colorScheme === 'dark' ? 'white' : 'black' }}>
+                {/* <TouchableOpacity style={{...styles.buttonStyle, borderColor: colorScheme === 'dark' ? 'white' : 'black' }}>
                     <ReText style={{ ...styles.animatedButtonTextStyle, color: colorScheme === 'dark' ? 'white' : 'black' }} text={progressText} />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+                <ReText style={{ ...styles.animatedButtonTextStyle, color: colorScheme === 'dark' ? 'white' : 'black' }} text={progressText} />
                 <GestureDetector gesture={pan}>
                     <Svg>
                         <AnimatedCircle
@@ -131,6 +140,32 @@ export default function Knob() {
                             animatedProps={animatedProps}
                         />
                         <Animated.View style={[{...styles.ballStyle, borderColor: colorScheme === 'dark' ? 'white' : 'black'}, animatedStyles]} />
+                        <Defs>
+                            {/* Define a ClipPath to clip the filling effect */}
+                            <ClipPath id="clip">
+                                <Circle 
+                                    cx={CENTER_X}
+                                    cy={CENTER_Y}
+                                    r={RADIUS-30}
+                                />
+                            </ClipPath>
+                        </Defs>
+                        <Circle 
+                            cx={CENTER_X}
+                            cy={CENTER_Y}
+                            r={RADIUS-30}
+                            fill={'none'}
+                        />
+                        <WaterContainerComponent 
+                            fill={'#00BFFF'}
+                            x={CENTER_X-(RADIUS)}
+                            y={CENTER_Y-(RADIUS)}
+                            height={100}
+                            width={RADIUS*2}
+                            clipPath='url(#clip)'
+                            transform={`rotate(180, ${CENTER_X}, ${CENTER_Y})`}
+                            animatedProps={dynamicHeight}
+                        />
                     </Svg>
                 </GestureDetector>
             </SafeAreaView>
@@ -150,7 +185,7 @@ const styles = StyleSheet.create({
         borderWidth: 3,
         width: BALL_SIZE,
         height: BALL_SIZE,
-        borderRadius: 25,
+        borderRadius: BALL_SIZE / 2,
     },
     buttonStyle: {
         position: 'absolute',
@@ -166,6 +201,8 @@ const styles = StyleSheet.create({
     },
     animatedButtonTextStyle: {
         fontSize: 30,
-        textAlign: 'center'
+        textAlign: 'center',
+        position: 'absolute',
+        top: 50
     }
 });
