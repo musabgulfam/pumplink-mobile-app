@@ -20,9 +20,9 @@ const CENTER_X: number = width / 2;
 
 const CENTER_Y: number = height / 2;
 
-export default function Knob() {
+export default function Dial() {
 
-    let colorScheme = useColorScheme();
+    const colorScheme = useColorScheme();
 
     const ANGLES_DEGREES: number[] = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30];
 
@@ -44,16 +44,18 @@ export default function Knob() {
 
     const progressText = useDerivedValue(() => {
         let _progress = Math.floor(progress.value)
-        return `${(_progress/10).toFixed(0)} ${_progress <= 1 ? 'minute' : 'minutes'}`;
+        return `${(_progress/10).toFixed(0)} ${Math.floor(_progress/10) < 2 ? 'minute' : 'minutes'}`;
     });
 
     // Function to trigger haptics safely
-    const triggerHaptic = () => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    function triggerHaptic(): void {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     };
 
     const pan = Gesture.Pan()
         .minDistance(1)
+        .minPointers(1)
+        .maxPointers(1)
         .shouldCancelWhenOutside(true)
         .onStart(() => {
             prevTranslationX.value = translationX.value;
@@ -108,9 +110,9 @@ export default function Knob() {
                     ANGLES_DEGREES.map(angle => <View key={angle} style={{
                         position: 'absolute',
                         top:
-                            cartesian2Canvas({ x: 0, y: RADIUS * Math.cos((angle * 10 + 2) * Math.PI / 180) - 16 }, { x: CENTER_X, y: CENTER_Y }).y,
+                            cartesian2Canvas({ x: 0, y: RADIUS * Math.cos((angle * 10) * Math.PI / 180) + 10 }, { x: CENTER_X, y: CENTER_Y }).y,
                         left:
-                            cartesian2Canvas({ x: (RADIUS * Math.sin((angle * 10 + 2) * Math.PI / 180) - 6), y: 0 }, { x: CENTER_X, y: CENTER_Y }).x,
+                            cartesian2Canvas({ x: (RADIUS * Math.sin((angle * 10) * Math.PI / 180)) - 10, y: 0 }, { x: CENTER_X, y: CENTER_Y }).x,
                         zIndex: 2
                     }}>
                         <Text style={[
