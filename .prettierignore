@@ -1,0 +1,8 @@
+# Ignore artifacts:
+build
+coverage
+android/app/
+vendor/
+ios/
+android/
+.github/workflows/test.yml
