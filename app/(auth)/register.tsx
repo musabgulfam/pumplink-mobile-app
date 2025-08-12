@@ -1,32 +1,19 @@
 import React, { useState } from 'react';
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    StyleSheet, 
-    TouchableOpacity 
-} from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Button } from '@/components';
 import { useRouter } from 'expo-router';
+import axios, { AxiosResponse } from 'axios';
 
 export default function Register() {
     const router = useRouter();
-    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Create Account 🌸</Text>
+            <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join our cute little community</Text>
-
-            <TextInput
-                style={styles.input}
-                placeholder="Name"
-                placeholderTextColor="#aaa"
-                value={name}
-                onChangeText={setName}
-            />
 
             <TextInput
                 style={styles.input}
@@ -49,12 +36,50 @@ export default function Register() {
             <Button
                 title="Register"
                 onPress={() => {
-                    /* handle register */
+                    setLoading(true);
+                    axios
+                        .post(
+                            'https://pumplink-backend-production.up.railway.app/api/v1/register',
+                            { email, password },
+                        )
+                        .then(
+                            (
+                                response: AxiosResponse<{
+                                    message: string;
+                                    user: {
+                                        created_at: string;
+                                        email: string;
+                                        id: string;
+                                        updated_at: string;
+                                    };
+                                }>,
+                            ) => {
+                                // Handle successful registration
+                                router.push('/(auth)/login');
+                                Alert.alert('Success', response.data.message);
+                            },
+                        )
+                        .catch((error) => {
+                            // Handle registration error
+                            console.error(error);
+                        })
+                        .finally(() => {
+                            setLoading(false);
+                        });
                 }}
             />
 
             <TouchableOpacity onPress={() => router.push('/')}>
-                <Text style={styles.link}>Already have an account? Login 💌</Text>
+                <Text style={styles.link}>
+                    Already have an account?{' '}
+                    <Text
+                        style={{
+                            textDecorationLine: 'underline',
+                        }}
+                    >
+                        Login
+                    </Text>
+                </Text>
             </TouchableOpacity>
         </View>
     );
@@ -63,7 +88,6 @@ export default function Register() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFF4F9',
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
@@ -86,11 +110,11 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         marginBottom: 15,
         borderWidth: 1,
-        borderColor: '#FFD6E8',
+        borderColor: '#555',
     },
     link: {
         marginTop: 15,
-        color: '#FF69B4',
+        color: '#555',
         fontWeight: '600',
     },
 });

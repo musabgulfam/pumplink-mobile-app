@@ -15,7 +15,7 @@ import { useColorScheme } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import axios from 'axios';
-import { Button } from './Button';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const BALL_SIZE = 50;
 
@@ -166,13 +166,34 @@ export default function Dial() {
                 {/* <TouchableOpacity style={{...styles.buttonStyle, borderColor: colorScheme === 'dark' ? 'white' : 'black' }}>
                     <ReText style={{ ...styles.animatedButtonTextStyle, color: colorScheme === 'dark' ? 'white' : 'black' }} text={progressText} />
                 </TouchableOpacity> */}
-                <ReText
+                <View
                     style={{
-                        ...styles.animatedButtonTextStyle,
-                        color: colorScheme === 'dark' ? 'white' : 'black',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        position: 'absolute',
+                        top: 50,
                     }}
-                    text={progressText}
-                />
+                >
+                    <ReText
+                        style={{
+                            ...styles.animatedButtonTextStyle,
+                            color: colorScheme === 'dark' ? 'white' : 'black',
+                        }}
+                        text={progressText}
+                    />
+                    <MaterialIcons
+                        name="fiber-manual-record"
+                        size={30}
+                        color={'red'}
+                        style={{
+                            // textShadowColor: online ? '#00ff00' : '#ff0000',
+                            textShadowColor: '#ff0000',
+                            textShadowOffset: { width: 0, height: 0 },
+                            textShadowRadius: 10, // glow effect
+                            margin: 5,
+                        }}
+                    />
+                </View>
                 <GestureDetector gesture={pan}>
                     <Svg>
                         <AnimatedCircle
@@ -231,9 +252,6 @@ export default function Dial() {
                     </Svg>
                 </GestureDetector>
             </SafeAreaView>
-            <View style={styles.buttonContainerStyle}>
-                <Button title="GO" onPress={() => {}} />
-            </View>
         </GestureHandlerRootView>
     );
 }
@@ -267,8 +285,6 @@ const styles = StyleSheet.create({
     animatedButtonTextStyle: {
         fontSize: 30,
         textAlign: 'center',
-        position: 'absolute',
-        top: 50,
     },
     dialContainer: {
         borderWidth: 1,
