@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { StyleSheet, View, Dimensions, Text, TouchableOpacity } from 'react-native';
+import { useCallback } from 'react';
+import { StyleSheet, View, Dimensions, Text } from 'react-native';
 import Svg, { Circle, Defs, ClipPath, Rect } from 'react-native-svg';
 import Animated, {
     useAnimatedStyle,
@@ -29,7 +29,7 @@ const CENTER_X: number = width / 2;
 
 const CENTER_Y: number = height / 2;
 
-export default function Dial() {
+export default function Dial({ state, onProgressChange }: { state: 'on' | 'off'; onProgressChange: (progress: string) => void }) {
     const colorScheme = useColorScheme();
 
     const ANGLES_DEGREES: number[] = [
@@ -55,25 +55,11 @@ export default function Dial() {
         transform: [{ translateX: translationX.value }, { translateY: translationY.value }],
     }));
 
-    const sendRequest = useCallback(async () => {
-        try {
-            const response = await axios.post('/api/endpoint', {
-                data: progress.value,
-                headers: {
-                    Authorization: `Bearer YOUR_ACCESS_TOKEN`,
-                },
-            });
-            console.log('Response:', response.data);
-        } catch (error) {
-            console.error('Error sending request:', error);
-        }
-    }, []);
-
-    // const angleTextTheme = ;
-
     const progressText = useDerivedValue(() => {
         let _progress = Math.floor(progress.value);
-        return `${(_progress / 10).toFixed(0)} ${Math.floor(_progress / 10) < 2 ? 'minute' : 'minutes'}`;
+        const text = `${(_progress / 10).toFixed(0)} ${Math.floor(_progress / 10) < 2 ? 'minute' : 'minutes'}`;
+        runOnJS(onProgressChange)(text);
+        return text;
     });
 
     // Function to trigger haptics safely
@@ -163,9 +149,6 @@ export default function Dial() {
                         </Text>
                     </View>
                 ))}
-                {/* <TouchableOpacity style={{...styles.buttonStyle, borderColor: colorScheme === 'dark' ? 'white' : 'black' }}>
-                    <ReText style={{ ...styles.animatedButtonTextStyle, color: colorScheme === 'dark' ? 'white' : 'black' }} text={progressText} />
-                </TouchableOpacity> */}
                 <View
                     style={{
                         flexDirection: 'row',
@@ -184,10 +167,9 @@ export default function Dial() {
                     <MaterialIcons
                         name="fiber-manual-record"
                         size={30}
-                        color={'red'}
+                        color={state === 'on' ? 'green' : 'red'}
                         style={{
-                            // textShadowColor: online ? '#00ff00' : '#ff0000',
-                            textShadowColor: '#ff0000',
+                            textShadowColor: state === 'on' ? '#00ff00' : '#ff0000',
                             textShadowOffset: { width: 0, height: 0 },
                             textShadowRadius: 10, // glow effect
                             margin: 5,

@@ -4,6 +4,7 @@ import { Button } from '@/components';
 import * as SecureStore from 'expo-secure-store';
 import { useRouter } from 'expo-router';
 import axios, { AxiosResponse } from 'axios';
+import { api } from '@/api';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -56,9 +57,9 @@ export default function Login() {
                     title="Login"
                     onPress={() => {
                         // Normally you’d validate credentials with an API
-                        axios
+                        api
                             .post(
-                                'https://pumplink-backend-production.up.railway.app/api/v1/login',
+                                '/login',
                                 { email, password },
                             )
                             .then(

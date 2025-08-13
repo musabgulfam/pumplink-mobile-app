@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Button } from '@/components';
 import { useRouter } from 'expo-router';
-import axios, { AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
+import { api } from '@/api';
 
 export default function Register() {
     const router = useRouter();
@@ -37,9 +38,9 @@ export default function Register() {
                 title="Register"
                 onPress={() => {
                     setLoading(true);
-                    axios
+                    api
                         .post(
-                            'https://pumplink-backend-production.up.railway.app/api/v1/register',
+                            '/register',
                             { email, password },
                         )
                         .then(

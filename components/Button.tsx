@@ -1,8 +1,8 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
 
-export function Button({ title, onPress }: { title: string; onPress: () => void }) {
+export function Button({ title, onPress, viewStyle }: { title: string; onPress: () => void; viewStyle?: ViewStyle }) {
     return (
-        <TouchableOpacity style={styles.buttonStyle} onPress={onPress}>
+        <TouchableOpacity style={[styles.buttonStyle, { backgroundColor: title === 'Logout' ? '#555' : '#FF8A00' }, viewStyle]} onPress={onPress}>
             <Text style={styles.buttonTextStyle}>{title}</Text>
         </TouchableOpacity>
     );
